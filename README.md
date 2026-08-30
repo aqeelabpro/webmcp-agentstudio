@@ -7,7 +7,6 @@
 [![WebMCP Standard](https://img.shields.io/badge/WebMCP-v1.0.0-cyan)](https://github.com/webmachinelearning/webmcp)
 [![Chrome 149+](https://img.shields.io/badge/Chrome-149%2B_Flag_Ready-green)](chrome://flags/#enable-webmcp-testing)
 [![React 19](https://img.shields.io/badge/React-19-blue)](https://react.dev)
-[![OpenAI ChatGPT Browser](https://img.shields.io/badge/ChatGPT-In--App_Browser_Native-purple)](https://chatgpt.com)
 
 ---
 
@@ -220,4 +219,4 @@ await document.modelContext.executeTool("modify_cart", { action: "add", productI
 ## 📜 Open Source License
 
 This project is open-source and released under the [MIT License](./LICENSE).  
-Copyright (c) 2026 aqeelabpro & AgentStudio Contributors.
+Copyright (c) 2026 aqeelabpro.
