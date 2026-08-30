@@ -185,7 +185,7 @@ AgentStudio includes 4 pre-configured domain environments accessible via the top
 
 ### 1. Run Locally (Fastest)
 ```bash
-git clone https://github.com/aqeelabbas/webmcp-agentstudio.git
+git clone https://github.com/aqeelabpro/webmcp-agentstudio.git
 cd webmcp-agentstudio
 npm install
 npm run dev
@@ -220,4 +220,4 @@ await document.modelContext.executeTool("modify_cart", { action: "add", productI
 ## 📜 Open Source License
 
 This project is open-source and released under the [MIT License](./LICENSE).  
-Copyright (c) 2026 Aqeel Abbas & AgentStudio Contributors.
+Copyright (c) 2026 aqeelabpro & AgentStudio Contributors.
