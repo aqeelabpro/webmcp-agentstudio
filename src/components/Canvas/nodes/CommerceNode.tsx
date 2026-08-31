@@ -1,6 +1,6 @@
 import React from 'react';
 import { CommerceNodeData, CommerceProduct } from '../../../types/canvas';
-import { ShoppingBag, Plus, Trash2, Tag, Star, Sparkles } from 'lucide-react';
+import { ShoppingBag, Plus, Minus, Trash2, Tag, Star, Sparkles, Zap } from 'lucide-react';
 
 interface Props {
   data: CommerceNodeData;
@@ -8,6 +8,19 @@ interface Props {
 }
 
 export const CommerceNode: React.FC<Props> = ({ data, onUpdateData }) => {
+  const recalculateTotals = (newCart: typeof data.cart, discountPct = data.discountTotal > 0 ? 15 : 0) => {
+    const subtotal = newCart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    const discountAmount = (subtotal * discountPct) / 100;
+    const total = subtotal - discountAmount;
+
+    onUpdateData({
+      cart: newCart,
+      subtotal: Math.round(subtotal * 100) / 100,
+      discountTotal: Math.round(discountAmount * 100) / 100,
+      total: Math.round(total * 100) / 100,
+    });
+  };
+
   const handleAddToCart = (product: CommerceProduct) => {
     const existingIndex = data.cart.findIndex((item) => item.product.id === product.id);
     let newCart = [...data.cart];
@@ -21,40 +34,59 @@ export const CommerceNode: React.FC<Props> = ({ data, onUpdateData }) => {
       newCart.push({ product, quantity: 1 });
     }
 
-    const subtotal = newCart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-    const discountMultiplier = (100 - (data.discountTotal > 0 ? 15 : 0)) / 100;
-    const total = subtotal * discountMultiplier;
+    recalculateTotals(newCart);
+  };
 
-    onUpdateData({
-      cart: newCart,
-      subtotal: Math.round(subtotal * 100) / 100,
-      total: Math.round(total * 100) / 100,
-    });
+  const handleUpdateQuantity = (productId: string, delta: number) => {
+    let newCart = [...data.cart];
+    const existingIndex = newCart.findIndex((item) => item.product.id === productId);
+
+    if (existingIndex >= 0) {
+      const newQty = newCart[existingIndex].quantity + delta;
+      if (newQty <= 0) {
+        newCart = newCart.filter((item) => item.product.id !== productId);
+      } else {
+        newCart[existingIndex] = {
+          ...newCart[existingIndex],
+          quantity: newQty,
+        };
+      }
+      recalculateTotals(newCart);
+    }
   };
 
   const handleRemoveFromCart = (productId: string) => {
     const newCart = data.cart.filter((item) => item.product.id !== productId);
-    const subtotal = newCart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-    const discountMultiplier = (100 - (data.discountTotal > 0 ? 15 : 0)) / 100;
-    const total = subtotal * discountMultiplier;
+    recalculateTotals(newCart);
+  };
 
-    onUpdateData({
-      cart: newCart,
-      subtotal: Math.round(subtotal * 100) / 100,
-      total: Math.round(total * 100) / 100,
-    });
+  const handleClearCart = () => {
+    recalculateTotals([]);
   };
 
   return (
     <div className="flex flex-col h-full text-slate-100 select-text overflow-hidden">
       {/* Promo Banner if applied */}
       {data.appliedPromoCode && (
-        <div className="mb-3 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-300 animate-pulse">
+        <div className="mb-2.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-300 animate-pulse">
           <div className="flex items-center gap-1.5 font-medium">
             <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
             Promo applied: <span className="font-mono font-bold">{data.appliedPromoCode}</span>
           </div>
           <span className="font-bold text-emerald-400">-15% OFF</span>
+        </div>
+      )}
+
+      {/* Cross-Node Webhook Trigger Banner */}
+      {data.total > 200 && (
+        <div className="mb-2.5 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-between text-[11px] text-purple-300">
+          <div className="flex items-center gap-1.5 font-medium">
+            <Zap className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
+            Cross-Node Pipeline Active: <span className="font-mono">cart.total &gt; $200</span>
+          </div>
+          <span className="text-[10px] font-bold bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/30">
+            VIP Webhook Fired
+          </span>
         </div>
       )}
 
@@ -75,7 +107,7 @@ export const CommerceNode: React.FC<Props> = ({ data, onUpdateData }) => {
                 <img
                   src={prod.image}
                   alt={prod.title}
-                  className="w-12 h-12 rounded-lg object-cover bg-slate-800 border border-slate-700/60"
+                  className="w-12 h-12 rounded-lg object-cover bg-slate-800 border border-slate-700/60 flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
@@ -113,7 +145,14 @@ export const CommerceNode: React.FC<Props> = ({ data, onUpdateData }) => {
           <div className="min-h-0 overflow-y-auto">
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
               <span>Agent Live Cart ({data.cart.reduce((acc, i) => acc + i.quantity, 0)})</span>
-              <span className="text-[10px] text-emerald-400 font-mono">WebMCP Synced</span>
+              {data.cart.length > 0 && (
+                <button
+                  onClick={handleClearCart}
+                  className="text-[10px] text-slate-500 hover:text-rose-400 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
             </div>
 
             {data.cart.length === 0 ? (
@@ -125,17 +164,38 @@ export const CommerceNode: React.FC<Props> = ({ data, onUpdateData }) => {
                 {data.cart.map((item) => (
                   <div
                     key={item.product.id}
-                    className="p-2 rounded-lg bg-slate-900/70 border border-slate-800 flex items-center justify-between text-xs"
+                    className="p-2 rounded-lg bg-slate-900/70 border border-slate-800 flex items-center justify-between text-xs gap-2"
                   >
-                    <div className="flex-1 min-w-0 pr-2">
+                    <div className="flex-1 min-w-0">
                       <p className="font-medium text-white truncate">{item.product.title}</p>
                       <p className="text-slate-400 text-[11px]">
-                        {item.quantity} × ${item.product.price} = ${(item.quantity * item.product.price).toFixed(2)}
+                        ${item.product.price} each = <strong className="text-white">${(item.quantity * item.product.price).toFixed(2)}</strong>
                       </p>
+                    </div>
+                    {/* Quantity Controls */}
+                    <div className="flex items-center gap-1 bg-slate-950 px-1.5 py-0.5 rounded-lg border border-slate-800">
+                      <button
+                        onClick={() => handleUpdateQuantity(item.product.id, -1)}
+                        className="p-1 text-slate-400 hover:text-white"
+                        title="Decrease"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="font-mono text-xs font-bold text-cyan-300 min-w-[14px] text-center">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => handleUpdateQuantity(item.product.id, 1)}
+                        className="p-1 text-slate-400 hover:text-white"
+                        title="Increase"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
                     </div>
                     <button
                       onClick={() => handleRemoveFromCart(item.product.id)}
                       className="text-slate-500 hover:text-rose-400 p-1"
+                      title="Remove"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

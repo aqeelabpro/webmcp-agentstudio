@@ -1,0 +1,162 @@
+{
+  "$schema": "https://spec.webmcp.org/v1/schema.json",
+  "title": "AgentStudio WebMCP Toolset",
+  "version": "1.0.0",
+  "description": "Registered WebMCP tools on document.modelContext for OpenAI WebMCP Challenge",
+  "endpoint": "document.modelContext",
+  "tools": [
+    {
+      "name": "search_products",
+      "description": "Search product catalog in active store node with keyword query and filters.",
+      "category": "commerce",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Product search keyword (e.g. headphones, keyboard, oled)"
+          },
+          "maxResults": {
+            "type": "number",
+            "description": "Maximum products to return",
+            "default": 5
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "modify_cart",
+      "description": "Add or remove products from the active customer shopping cart session.",
+      "category": "commerce",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["add", "remove", "clear"],
+            "description": "Cart operation to perform"
+          },
+          "productId": {
+            "type": "string",
+            "description": "Unique product ID (e.g. prod-1 for Apex Ultra ANC Headphones, prod-2 for Quantum Keyboard, prod-3 for OLED Monitor)"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity to add/remove",
+            "default": 1
+          }
+        },
+        "required": ["action"]
+      }
+    },
+    {
+      "name": "apply_discount",
+      "description": "Apply promotional coupon or agent-negotiated discount percentage to cart.",
+      "category": "commerce",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "promoCode": {
+            "type": "string",
+            "description": "Coupon code (e.g. SUMMER2026 or AGENT_VIP_15)"
+          },
+          "discountPercent": {
+            "type": "number",
+            "description": "Discount percentage (1-50)",
+            "default": 15
+          }
+        },
+        "required": ["promoCode"]
+      }
+    },
+    {
+      "name": "get_workspace_state",
+      "description": "Get current visual canvas state including all nodes, data, and edge connections.",
+      "category": "canvas",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "create_canvas_element",
+      "description": "Spawn a new node card on the infinite visual canvas.",
+      "category": "canvas",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["ui_component", "chart", "data_table", "api_connector", "markdown_doc", "workflow_action"]
+          },
+          "title": { "type": "string" },
+          "content": { "type": "string" }
+        },
+        "required": ["type", "title"]
+      }
+    },
+    {
+      "name": "update_canvas_element",
+      "description": "Mutate properties, title, theme, or state of an existing canvas node.",
+      "category": "canvas",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "nodeId": { "type": "string" },
+          "properties": { "type": "object" }
+        },
+        "required": ["nodeId"]
+      }
+    },
+    {
+      "name": "delete_canvas_element",
+      "description": "Destructively remove a node from the canvas (Requires human confirmation).",
+      "category": "canvas",
+      "requiresConfirmation": true,
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "nodeId": { "type": "string" }
+        },
+        "required": ["nodeId"]
+      }
+    },
+    {
+      "name": "query_edge_telemetry",
+      "description": "Query Cloudflare edge request metrics, RPS, and anomaly logs.",
+      "category": "data",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "timeRange": { "type": "string", "default": "30m" },
+          "metric": { "type": "string", "default": "requests_and_errors" }
+        }
+      }
+    },
+    {
+      "name": "generate_react_component",
+      "description": "Synthesize interactive React 19 UI component with Tailwind CSS.",
+      "category": "ui",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "componentType": { "type": "string", "enum": ["pricing", "counter", "newsletter", "hero"] },
+          "theme": { "type": "string", "default": "cyber-dark" }
+        }
+      }
+    },
+    {
+      "name": "triage_support_tickets",
+      "description": "Auto-classify customer tickets and dispatch escalation webhooks.",
+      "category": "workflow",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "autoResolvePositive": { "type": "boolean", "default": true },
+          "escalateCritical": { "type": "boolean", "default": true }
+        }
+      }
+    }
+  ]
+}

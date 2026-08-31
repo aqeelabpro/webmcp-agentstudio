@@ -1,0 +1,58 @@
+{
+  "$schema": "https://spec.webmcp.org/v1/schema.json",
+  "title": "AgentStudio WebMCP Toolset",
+  "version": "1.0.0",
+  "description": "Registered WebMCP tools on document.modelContext for OpenAI WebMCP Challenge",
+  "endpoint": "document.modelContext",
+  "tools": [
+    {
+      "name": "search_products",
+      "description": "Search product catalog in active store node with keyword query and filters.",
+      "category": "commerce",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "description": "Product search keyword (e.g. headphones, keyboard, oled)" },
+          "maxResults": { "type": "number", "description": "Maximum products to return", "default": 5 }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "modify_cart",
+      "description": "Add or remove products from the active customer shopping cart session.",
+      "category": "commerce",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": { "type": "string", "enum": ["add", "remove", "clear"] },
+          "productId": { "type": "string", "description": "Product ID (e.g. prod-1: Apex Ultra ANC Headphones ($249.99, Best Seller), prod-2: Quantum Keyboard ($159), prod-3: OLED Monitor ($799))" },
+          "quantity": { "type": "number", "default": 1 }
+        },
+        "required": ["action"]
+      }
+    },
+    {
+      "name": "apply_discount",
+      "description": "Apply promotional coupon or agent-negotiated discount percentage to cart.",
+      "category": "commerce",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "promoCode": { "type": "string", "description": "Coupon code (e.g. SUMMER2026 or AGENT_VIP_15)" },
+          "discountPercent": { "type": "number", "default": 15 }
+        },
+        "required": ["promoCode"]
+      }
+    },
+    {
+      "name": "get_workspace_state",
+      "description": "Get current visual canvas state including all nodes, data, and edge connections.",
+      "category": "canvas",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

@@ -169,8 +169,43 @@ export function App() {
           isAgentModified: true,
         };
 
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
         setNodes((prev) =>
-          prev.map((n) => (n.id === storeNode.id ? { ...n, data: updatedData } : n))
+          prev.map((n) => {
+            if (n.id === storeNode.id) {
+              return { ...n, data: updatedData };
+            }
+            // Update connected Sales Velocity Chart
+            if (n.type === 'chart' && n.id === 'node-chart-1') {
+              const prevPoints = (n.data as any).dataPoints || [];
+              const newPoints = [
+                ...prevPoints.slice(-5),
+                { label: timeStr, value: Math.round(updatedData.total * 10) + 1200 },
+              ];
+              return {
+                ...n,
+                data: {
+                  ...n.data,
+                  dataPoints: newPoints,
+                  isAgentModified: true,
+                } as any,
+              };
+            }
+            // Update connected Webhook node if total > 200
+            if (n.type === 'workflow_action' && n.id === 'node-action-1' && updatedData.total > 200) {
+              return {
+                ...n,
+                data: {
+                  ...n.data,
+                  executionCount: ((n.data as any).executionCount || 0) + 1,
+                  lastExecutionStatus: 'success',
+                  isAgentModified: true,
+                } as any,
+              };
+            }
+            return n;
+          })
         );
 
         confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
@@ -215,8 +250,30 @@ export function App() {
           isAgentModified: true,
         };
 
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
         setNodes((prev) =>
-          prev.map((n) => (n.id === storeNode.id ? { ...n, data: updatedData } : n))
+          prev.map((n) => {
+            if (n.id === storeNode.id) {
+              return { ...n, data: updatedData };
+            }
+            if (n.type === 'chart' && n.id === 'node-chart-1') {
+              const prevPoints = (n.data as any).dataPoints || [];
+              const newPoints = [
+                ...prevPoints.slice(-5),
+                { label: timeStr, value: Math.round(updatedData.total * 10) + 1400 },
+              ];
+              return {
+                ...n,
+                data: {
+                  ...n.data,
+                  dataPoints: newPoints,
+                  isAgentModified: true,
+                } as any,
+              };
+            }
+            return n;
+          })
         );
 
         confetti({ particleCount: 70, spread: 80, origin: { y: 0.7 } });
