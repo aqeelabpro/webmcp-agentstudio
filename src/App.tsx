@@ -87,7 +87,7 @@ export function App() {
     });
 
     // Tool 2: search_products (Shopify WebMCP standard)
-    const unregSearch = globalModelContext.registerTool({
+    const unregSearch = (document.modelContext || globalModelContext).registerTool({
       name: 'search_products',
       description: 'Search product catalog in active store node with keyword query and filters.',
       inputSchema: {
